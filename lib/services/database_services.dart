@@ -60,7 +60,8 @@ class DatabaseService{
           title:doc['title']??'',
           description:doc['description']??'',
           completed:doc['completed']??false,
-          timeStamp:doc['createAt']??'');
+          timeStamp: doc['createAt'] ?? Timestamp.now()
+      );
 
     }).toList();
   }
