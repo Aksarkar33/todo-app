@@ -1,121 +1,140 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo_app/services/auth_services.dart';
 import 'package:todo_app/services/home_screen.dart';
-
-import 'LoginScreen.dart';
 
 class SigninScreen extends StatelessWidget {
   final AuthServices _auth = AuthServices();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passController = TextEditingController();
 
+  SigninScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF1d2630),
+      backgroundColor: const Color(0xFF1d2630),
       appBar: AppBar(
-        backgroundColor: Color(0xFF1d2630),
+        backgroundColor: const Color(0xFF1d2630),
         foregroundColor: Colors.white,
-        title: Text("Create Account"),
+        title: const Text("Create Account"),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(height: 50),
-            Text(
-              "welcome",
-              style: TextStyle(
-                fontSize: 35,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 5),
-            Text(
-              "Register here",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
+            const SizedBox(height: 50),
+
+            // Email Field
+            TextField(
+              controller: _emailController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                labelText: "Email",
+                labelStyle: const TextStyle(color: Colors.white60),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Colors.white60),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
 
-            TextField(
-              controller: _emailController,
-              style: TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                labelText: "Email",
-                labelStyle: TextStyle(color: Colors.white60),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.white60),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            SizedBox(height: 40),
+            const SizedBox(height: 20),
+
+            // Password Field
             TextField(
               controller: _passController,
-              style: TextStyle(color: Colors.white),
               obscureText: true,
+              style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                labelText: "password",
-                labelStyle: TextStyle(color: Colors.white60),
+                labelText: "Password",
+                labelStyle: const TextStyle(color: Colors.white60),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.white60),
+                  borderSide: const BorderSide(color: Colors.white60),
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
-            SizedBox(height: 50),
-            SizedBox(
-              height: 55,
-              width: MediaQuery.of(context).size.width / 1.5,
-              child: ElevatedButton(
-                onPressed: () async {
-                  User? user = await _auth.registerWithEmailAndPassword(
-                    _emailController.text,
-                    _passController.text,
-                  );
-                  if (user != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeScreen()),
-                    );
-                  }
-                },
-                child: Text("Register"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white, // button background
-                  foregroundColor: Colors.indigo, // text color
-                  fixedSize: Size(200, 50),
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+
+            const SizedBox(height: 30),
+
+            // Register Button
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-            ),
-            SizedBox(height: 20),
-            Text("OR", style: TextStyle(color: Colors.white)),
-            SizedBox(height: 20),
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Loginscreen()),
+              onPressed: () async {
+                final user = await _auth.registerWithEmailAndPassword(
+                  _emailController.text.trim(),
+                  _passController.text.trim(),
                 );
+                if (user != null && context.mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => HomeScreen()),
+                  );
+                }
               },
-              child: Text(
-                "Log in",
-                style: TextStyle(color: Colors.indigo, fontSize: 18),
+              child: const Text(
+                "Sign Up",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Divider OR
+            Row(
+              children: const [
+                Expanded(
+                  child: Divider(color: Colors.white54, thickness: 1),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  child: Text("OR", style: TextStyle(color: Colors.white)),
+                ),
+                Expanded(
+                  child: Divider(color: Colors.white54, thickness: 1),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
+
+            // Sign In Button
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.indigo),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                final user = await _auth.signInWithEmailAndPassword(
+                  _emailController.text.trim(),
+                  _passController.text.trim(),
+                );
+                if (user != null && context.mounted) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => HomeScreen()),
+                  );
+                }
+              },
+              child: const Text(
+                "Sign In",
+                style: TextStyle(color: Colors.indigo, fontSize: 16),
               ),
             ),
           ],

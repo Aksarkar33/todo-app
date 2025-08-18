@@ -8,10 +8,10 @@ class CompletedWidget extends StatefulWidget {
   const CompletedWidget({super.key});
 
   @override
-  State<CompletedWidget> createState() => _PendingWidgetState();
+  State<CompletedWidget> createState() => _CompletedWidgetState();
 }
 
-class _PendingWidgetState extends State<CompletedWidget> {
+class _CompletedWidgetState extends State<CompletedWidget> {
   User? user = FirebaseAuth.instance.currentUser;
   late String uid;
 
@@ -23,79 +23,6 @@ class _PendingWidgetState extends State<CompletedWidget> {
     uid = FirebaseAuth.instance.currentUser!.uid;
   }
 
-  // ------------------ Add / Edit Dialog ------------------
-  void _showAddEditDialog({Todo? todo}) {
-    final TextEditingController _titleController = TextEditingController(
-      text: todo?.title,
-    );
-    final TextEditingController _descriptionController = TextEditingController(
-      text: todo?.description,
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text(
-            todo == null ? "Add Task" : "Edit Task",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(
-                    labelText: "Title",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: "Description",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: () async {
-                if (todo == null) {
-                  await _databaseService.addTodoItem(
-                    _titleController.text,
-                    _descriptionController.text,
-                  );
-                } else {
-                  await _databaseService.updateTodo(
-                    todo.id,
-                    _titleController.text,
-                    _descriptionController.text,
-                  );
-                }
-                Navigator.pop(context);
-              },
-              child: Text(todo == null ? "Add" : "Update"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ------------------ UI ------------------
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Todo>>(
@@ -103,6 +30,12 @@ class _PendingWidgetState extends State<CompletedWidget> {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           List<Todo> todos = snapshot.data!;
+          if (todos.isEmpty) {
+            return const Center(
+              child: Text("No completed tasks yet"),
+            );
+          }
+
           return ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -130,9 +63,17 @@ class _PendingWidgetState extends State<CompletedWidget> {
                           _databaseService.deleteTodotask(todo.id);
                         },
                       ),
+                      // (Optional) Restore button
+                      SlidableAction(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        icon: Icons.restore,
+                        onPressed: (context) {
+                          _databaseService.updateTodoStatus(todo.id, false);
+                        },
+                      ),
                     ],
                   ),
-
                   child: ListTile(
                     title: Text(
                       todo.title,
@@ -143,7 +84,9 @@ class _PendingWidgetState extends State<CompletedWidget> {
                     ),
                     subtitle: Text(
                       todo.description,
-                      style: TextStyle(decoration: TextDecoration.lineThrough),
+                      style: const TextStyle(
+                        decoration: TextDecoration.lineThrough,
+                      ),
                     ),
                     trailing: Text('${dt.day}/${dt.month}/${dt.year}'),
                   ),
@@ -153,7 +96,7 @@ class _PendingWidgetState extends State<CompletedWidget> {
           );
         } else {
           return const Center(
-            child: CircularProgressIndicator(color: Colors.white),
+            child: CircularProgressIndicator(color: Colors.indigo),
           );
         }
       },
